@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>羽毛球基金</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            gap: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            width: 100%;
+            padding: 30px 0 10px;
+            font-size: 2em;
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            text-align: center;
+            width: 100%;
+            color: #8892b0;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+        }
+
+        /* Left Panel */
+        .left-panel {
+            flex: 1;
+            min-width: 360px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+        }
+
+        /* Water Ball */
+        .ball-container {
+            position: relative;
+            width: 220px;
+            height: 220px;
+        }
+
+        .water-ball {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            box-shadow:
+                0 0 30px rgba(0, 210, 255, 0.3),
+                inset 0 0 30px rgba(0, 210, 255, 0.1);
+            animation: float 3s ease-in-out infinite;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .water-ball.red {
+            box-shadow:
+                0 0 30px rgba(255, 71, 87, 0.4),
+                inset 0 0 30px rgba(255, 71, 87, 0.1);
+            border-color: rgba(255, 71, 87, 0.3);
+        }
+
+        .water-ball.green {
+            box-shadow:
+                0 0 30px rgba(0, 230, 118, 0.4),
+                inset 0 0 30px rgba(0, 230, 118, 0.1);
+            border-color: rgba(0, 230, 118, 0.3);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+        }
+
+        .water {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60%;
+            transition: height 1s ease, background 0.5s ease;
+        }
+
+        .water.green {
+            background: linear-gradient(180deg, rgba(0, 230, 118, 0.6) 0%, rgba(0, 180, 90, 0.9) 100%);
+        }
+
+        .water.red {
+            background: linear-gradient(180deg, rgba(255, 71, 87, 0.6) 0%, rgba(200, 50, 60, 0.9) 100%);
+        }
+
+        .wave {
+            position: absolute;
+            top: -20px;
+            left: -50%;
+            width: 200%;
+            height: 40px;
+            border-radius: 40%;
+            animation: wave 3s linear infinite;
+        }
+
+        .wave.green { background: rgba(0, 230, 118, 0.4); }
+        .wave.red { background: rgba(255, 71, 87, 0.4); }
+
+        .wave:nth-child(2) {
+            top: -15px;
+            animation: wave 4s linear infinite reverse;
+            opacity: 0.6;
+        }
+
+        .wave:nth-child(3) {
+            top: -10px;
+            animation: wave 5s linear infinite;
+            opacity: 0.4;
+        }
+
+        @keyframes wave {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .ball-amount {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2em;
+            font-weight: bold;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        .ball-label {
+            position: absolute;
+            bottom: 22%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8em;
+            opacity: 0.8;
+            z-index: 10;
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            animation: rise 3s ease-in infinite;
+            z-index: 5;
+        }
+
+        @keyframes rise {
+            0% { transform: translateY(0) scale(1); opacity: 0.6; }
+            100% { transform: translateY(-180px) scale(0.3); opacity: 0; }
+        }
+
+        /* Action Form */
+        .action-form {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 25px;
+            width: 100%;
+            max-width: 400px;
+            backdrop-filter: blur(10px);
+        }
+
+        .action-form h3 {
+            margin-bottom: 18px;
+            color: #00d2ff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.85em;
+            color: #8892b0;
+        }
+
+        .form-group .required::after {
+            content: ' *';
+            color: #ff5252;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            font-size: 0.95em;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: #00d2ff;
+        }
+
+        .form-group select option {
+            background: #1a1a2e;
+            color: #fff;
+        }
+
+        .form-group .hint {
+            font-size: 0.75em;
+            color: #5a6a8a;
+            margin-top: 4px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-income {
+            background: linear-gradient(135deg, #00e676, #00c853);
+            color: #1a1a2e;
+        }
+
+        .btn-income:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 230, 118, 0.4);
+        }
+
+        .btn-expense {
+            background: linear-gradient(135deg, #ff5252, #d32f2f);
+            color: #fff;
+        }
+
+        .btn-expense:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 82, 82, 0.4);
+        }
+
+        /* Members */
+        .members-section {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .members-section h4 {
+            color: #8892b0;
+            font-size: 0.85em;
+            margin-bottom: 8px;
+        }
+
+        .member-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .member-chip {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.8em;
+            color: #ccd6f6;
+        }
+
+        .add-member-btn {
+            background: rgba(0, 210, 255, 0.1);
+            border: 1px dashed rgba(0, 210, 255, 0.4);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.8em;
+            color: #00d2ff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .add-member-btn:hover {
+            background: rgba(0, 210, 255, 0.2);
+        }
+
+        /* Right Panel */
+        .right-panel {
+            flex: 1.2;
+            min-width: 400px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: rgba(255,255,255,0.03);
+            color: #8892b0;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .tab-btn.active {
+            background: rgba(0, 210, 255, 0.1);
+            color: #00d2ff;
+        }
+
+        .tab-btn .badge {
+            display: inline-block;
+            background: #ff5252;
+            color: #fff;
+            font-size: 0.7em;
+            padding: 2px 7px;
+            border-radius: 10px;
+            margin-left: 5px;
+            font-weight: bold;
+        }
+
+        .tab-btn .badge.zero {
+            background: rgba(255,255,255,0.15);
+            color: #8892b0;
+        }
+
+        /* Pending Section */
+        .pending-list, .history-list {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 15px;
+            max-height: 550px;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Pending Item */
+        .pending-item {
+            background: rgba(255, 165, 0, 0.05);
+            border: 1px solid rgba(255, 165, 0, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+
+        .pending-item:hover {
+            border-color: rgba(255, 165, 0, 0.4);
+        }
+
+        .pending-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .pending-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .pending-type {
+            font-size: 0.75em;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .pending-type.income {
+            background: rgba(0, 230, 118, 0.15);
+            color: #00e676;
+        }
+
+        .pending-type.expense {
+            background: rgba(255, 82, 82, 0.15);
+            color: #ff5252;
+        }
+
+        .pending-amount {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .pending-amount.income { color: #00e676; }
+        .pending-amount.expense { color: #ff5252; }
+
+        .pending-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px 15px;
+            margin-bottom: 12px;
+            font-size: 0.85em;
+        }
+
+        .pending-detail-item {
+            display: flex;
+            gap: 6px;
+        }
+
+        .pending-detail-item .label {
+            color: #5a6a8a;
+            white-space: nowrap;
+        }
+
+        .pending-detail-item .value {
+            color: #ccd6f6;
+        }
+
+        .pending-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .pending-btn {
+            padding: 7px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pending-btn.confirm {
+            background: linear-gradient(135deg, #00e676, #00c853);
+            color: #1a1a2e;
+        }
+
+        .pending-btn.confirm:hover {
+            box-shadow: 0 3px 12px rgba(0, 230, 118, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .pending-btn.reject {
+            background: rgba(255, 82, 82, 0.15);
+            color: #ff5252;
+            border: 1px solid rgba(255, 82, 82, 0.3);
+        }
+
+        .pending-btn.reject:hover {
+            background: rgba(255, 82, 82, 0.25);
+        }
+
+        /* History Item */
+        .history-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background 0.2s;
+            border-radius: 8px;
+        }
+
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .history-icon.income {
+            background: rgba(0, 230, 118, 0.15);
+            color: #00e676;
+        }
+
+        .history-icon.expense {
+            background: rgba(255, 82, 82, 0.15);
+            color: #ff5252;
+        }
+
+        .history-icon.rejected {
+            background: rgba(255, 165, 0, 0.15);
+            color: #ffa500;
+        }
+
+        .history-info {
+            flex: 1;
+        }
+
+        .history-desc {
+            font-weight: 500;
+            margin-bottom: 3px;
+            font-size: 0.95em;
+        }
+
+        .history-meta {
+            font-size: 0.78em;
+            color: #8892b0;
+            line-height: 1.4;
+        }
+
+        .history-amount {
+            font-weight: bold;
+            font-size: 1.1em;
+            text-align: right;
+        }
+
+        .history-amount.income { color: #00e676; }
+        .history-amount.expense { color: #ff5252; }
+        .history-amount.rejected { color: #ffa500; text-decoration: line-through; }
+
+        .history-status {
+            font-size: 0.7em;
+            text-align: right;
+            margin-top: 2px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #8892b0;
+        }
+
+        .empty-state .icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        /* Filter */
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: transparent;
+            color: #8892b0;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: rgba(0, 210, 255, 0.15);
+            border-color: #00d2ff;
+            color: #00d2ff;
+        }
+
+        /* Scrollbar */
+        .pending-list::-webkit-scrollbar,
+        .history-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .pending-list::-webkit-scrollbar-track,
+        .history-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .pending-list::-webkit-scrollbar-thumb,
+        .history-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-weight: 500;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            display: none;
+        }
+
+        .toast.success {
+            background: rgba(0, 230, 118, 0.9);
+            color: #1a1a2e;
+        }
+
+        .toast.error {
+            background: rgba(255, 82, 82, 0.9);
+            color: #fff;
+        }
+
+        .toast.warning {
+            background: rgba(255, 165, 0, 0.9);
+            color: #1a1a2e;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #1a1a2e;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 16px;
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .modal h3 {
+            color: #00d2ff;
+            margin-bottom: 15px;
+        }
+
+        .modal p {
+            color: #8892b0;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            font-size: 1em;
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+        .modal input:focus {
+            border-color: #00d2ff;
+        }
+
+        .modal-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .modal-btn.cancel {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .modal-btn.confirm {
+            background: #00d2ff;
+            color: #1a1a2e;
+        }
+
+        .modal-btn.danger {
+            background: #ff5252;
+            color: #fff;
+        }
+
+        /* Info box */
+        .info-box {
+            background: rgba(0, 210, 255, 0.08);
+            border: 1px solid rgba(0, 210, 255, 0.2);
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-bottom: 18px;
+            font-size: 0.82em;
+            color: #8892b0;
+            line-height: 1.5;
+        }
+
+        .info-box strong {
+            color: #00d2ff;
+        }
+
+        /* Responsive */
+        @media (max-width: 860px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .left-panel, .right-panel {
+                min-width: unset;
+                width: 100%;
+            }
+
+            .ball-container, .water-ball {
+                width: 180px;
+                height: 180px;
+            }
+
+            .ball-amount {
+                font-size: 1.6em;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>&#127992; 羽毛球殺球基金</h1>
+    <p class="subtitle">即時共同記帳 — 收款確認制，入帳有保障</p>
+
+    <div class="container">
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <div class="ball-container">
+                <div class="water-ball green" id="waterBall">
+                    <div class="water green" id="water">
+                        <div class="wave green" id="wave1"></div>
+                        <div class="wave green" id="wave2"></div>
+                        <div class="wave green" id="wave3"></div>
+                    </div>
+                    <div class="bubble" style="left:20%;bottom:10%;width:8px;height:8px;animation-delay:0s;"></div>
+                    <div class="bubble" style="left:50%;bottom:5%;width:5px;height:5px;animation-delay:1s;"></div>
+                    <div class="bubble" style="left:70%;bottom:15%;width:6px;height:6px;animation-delay:2s;"></div>
+                    <div class="bubble" style="left:35%;bottom:8%;width:4px;height:4px;animation-delay:0.5s;"></div>
+                    <span class="ball-amount" id="ballAmount">$0</span>
+                    <span class="ball-label">已確認餘額</span>
+                </div>
+            </div>
+
+            <!-- Action Form -->
+            <div class="action-form">
+                <h3>&#128179; 提交交易</h3>
+
+                <div class="info-box">
+                    <strong>流程說明：</strong>提交後進入「待確認」，收款人確認收到款項後才會正式入帳。
+                </div>
+
+                <div class="form-group">
+                    <label class="required">匯款人 / 經手人</label>
+                    <select id="personSelect">
+                        <option value="">-- 請選擇 --</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="required">金額 (NT$)</label>
+                        <input type="number" id="amountInput" placeholder="輸入金額" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>帳號末五碼</label>
+                        <input type="text" id="accountInput" placeholder="例：12345" maxlength="5" pattern="[0-9]{5}">
+                        <div class="hint">轉帳請填寫，現金可留空</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="required">說明 / 用途</label>
+                    <input type="text" id="descInput" placeholder="例：6月份球費、買球、場地費">
+                </div>
+
+                <div class="form-group">
+                    <label>備註</label>
+                    <textarea id="noteInput" placeholder="其他補充資訊（選填）"></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-income" onclick="submitTransaction('income')">&#11014; 提交收入</button>
+                    <button class="btn btn-expense" onclick="submitTransaction('expense')">&#11015; 提交支出</button>
+                </div>
+            </div>
+
+            <!-- Members -->
+            <div class="members-section">
+                <h4>成員列表</h4>
+                <div class="member-chips" id="memberChips">
+                    <span class="add-member-btn" onclick="showAddMemberModal()">+ 新增成員</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="right-panel">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('pending')">
+                    &#9203; 待確認 <span class="badge" id="pendingBadge">0</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('history')">
+                    &#9989; 已完成明細
+                </button>
+            </div>
+
+            <!-- Pending Tab -->
+            <div class="tab-content active" id="tabPending">
+                <div class="pending-list" id="pendingList">
+                    <div class="empty-state">
+                        <div class="icon">&#9203;</div>
+                        <p>目前沒有待確認的交易</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Tab -->
+            <div class="tab-content" id="tabHistory">
+                <div class="filter-bar">
+                    <button class="filter-btn active" onclick="filterHistory('all')">全部</button>
+                    <button class="filter-btn" onclick="filterHistory('income')">收入</button>
+                    <button class="filter-btn" onclick="filterHistory('expense')">支出</button>
+                    <button class="filter-btn" onclick="filterHistory('rejected')">已駁回</button>
+                </div>
+                <div class="history-list" id="historyList">
+                    <div class="empty-state">
+                        <div class="icon">&#128203;</div>
+                        <p>尚無交易記錄</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Member Modal -->
+    <div class="modal-overlay" id="memberModal">
+        <div class="modal">
+            <h3>新增成員</h3>
+            <input type="text" id="newMemberInput" placeholder="輸入成員名稱">
+            <div class="modal-btns">
+                <button class="modal-btn cancel" onclick="closeModal('memberModal')">取消</button>
+                <button class="modal-btn confirm" onclick="addMember()">確認新增</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal">
+            <h3>&#9989; 確認入帳</h3>
+            <p id="confirmMsg">確認已收到此筆款項？確認後金額將正式計入基金。</p>
+            <div class="form-group" style="margin-bottom:15px;">
+                <label style="color:#8892b0;font-size:0.85em;">確認人</label>
+                <select id="confirmPerson" style="width:100%;padding:10px 14px;border:1px solid rgba(255,255,255,0.15);border-radius:8px;background:rgba(255,255,255,0.05);color:#fff;font-size:0.95em;">
+                    <option value="">-- 選擇確認人 --</option>
+                </select>
+            </div>
+            <div class="modal-btns">
+                <button class="modal-btn cancel" onclick="closeModal('confirmModal')">取消</button>
+                <button class="modal-btn confirm" onclick="confirmTransaction()">確認收到</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Modal -->
+    <div class="modal-overlay" id="rejectModal">
+        <div class="modal">
+            <h3>&#10060; 駁回交易</h3>
+            <p>請說明駁回原因：</p>
+            <input type="text" id="rejectReason" placeholder="例：未收到款項、金額不符">
+            <div class="form-group" style="margin-bottom:15px;">
+                <label style="color:#8892b0;font-size:0.85em;">駁回人</label>
+                <select id="rejectPerson" style="width:100%;padding:10px 14px;border:1px solid rgba(255,255,255,0.15);border-radius:8px;background:rgba(255,255,255,0.05);color:#fff;font-size:0.95em;">
+                    <option value="">-- 選擇駁回人 --</option>
+                </select>
+            </div>
+            <div class="modal-btns">
+                <button class="modal-btn cancel" onclick="closeModal('rejectModal')">取消</button>
+                <button class="modal-btn danger" onclick="rejectTransaction()">確認駁回</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAdPI9uvP2tAPAZabX1jlRHd0GftxkrcjI",
+            authDomain: "badminton-fund-4d4fd.firebaseapp.com",
+            databaseURL: "https://badminton-fund-4d4fd-default-rtdb.firebaseio.com",
+            projectId: "badminton-fund-4d4fd",
+            storageBucket: "badminton-fund-4d4fd.firebasestorage.app",
+            messagingSenderId: "638627108913",
+            appId: "1:638627108913:web:77c2c4050e69fbe49c9d10"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const dbRef = db.ref('badminton_fund');
+
+        const TEAMS_WEBHOOK_URL = 'https://defaulta7687ede7a6b4ef6bace642f677fbe.31.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/764d5d4d0e1a44e88aec94df026faba4/triggers/manual/paths/invoke?api-version=1';
+
+        // Send notification to Teams
+        function sendTeamsNotification(message) {
+            fetch(TEAMS_WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: message })
+            }).catch(err => console.log('Teams notification failed:', err));
+        }
+
+        let state = {
+            balance: 0,
+            members: [],
+            pending: [],
+            transactions: []
+        };
+
+        let currentFilter = 'all';
+        let activeTab = 'pending';
+        let pendingActionId = null;
+
+        // Initialize
+        function init() {
+            // Listen for realtime updates from Firebase
+            dbRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    state = data;
+                    if (!Array.isArray(state.pending)) state.pending = [];
+                    if (!Array.isArray(state.transactions)) state.transactions = [];
+                    if (!Array.isArray(state.members)) state.members = [];
+                }
+                renderMembers();
+                renderPending();
+                renderHistory();
+                updateBall();
+                updateBadge();
+            });
+        }
+
+        // Save to Firebase (syncs to all users)
+        function saveToStorage() {
+            dbRef.set(state);
+        }
+
+        // Water Ball
+        function updateBall() {
+            const ball = document.getElementById('waterBall');
+            const water = document.getElementById('water');
+            const wave1 = document.getElementById('wave1');
+            const wave2 = document.getElementById('wave2');
+            const wave3 = document.getElementById('wave3');
+            const amountEl = document.getElementById('ballAmount');
+
+            amountEl.textContent = `$${state.balance.toLocaleString()}`;
+
+            const isLow = state.balance <= 500;
+            const colorClass = isLow ? 'red' : 'green';
+            const removeClass = isLow ? 'green' : 'red';
+
+            [ball, water, wave1, wave2, wave3].forEach(el => {
+                el.classList.remove(removeClass);
+                el.classList.add(colorClass);
+            });
+
+            const level = Math.min(Math.max((state.balance / 5000) * 80, 10), 90);
+            water.style.height = level + '%';
+        }
+
+        // Submit Transaction (goes to pending)
+        function submitTransaction(type) {
+            const person = document.getElementById('personSelect').value;
+            const amount = parseInt(document.getElementById('amountInput').value);
+            const account = document.getElementById('accountInput').value.trim();
+            const desc = document.getElementById('descInput').value.trim();
+            const note = document.getElementById('noteInput').value.trim();
+
+            if (!person) { showToast('請選擇匯款人/經手人', 'error'); return; }
+            if (!amount || amount <= 0) { showToast('請輸入有效金額', 'error'); return; }
+            if (!desc) { showToast('請輸入說明/用途', 'error'); return; }
+            if (account && !/^\d{1,5}$/.test(account)) { showToast('帳號末五碼請輸入數字', 'error'); return; }
+
+            const item = {
+                id: Date.now(),
+                type: type,
+                person: person,
+                amount: amount,
+                account: account || '(現金)',
+                description: desc,
+                note: note,
+                submitTime: new Date().toISOString(),
+                status: 'pending'
+            };
+
+            state.pending.unshift(item);
+            saveToStorage();
+
+            // Reset form
+            document.getElementById('amountInput').value = '';
+            document.getElementById('accountInput').value = '';
+            document.getElementById('descInput').value = '';
+            document.getElementById('noteInput').value = '';
+
+            renderPending();
+            updateBadge();
+            switchTab('pending');
+            showToast('已提交，等待收款人確認', 'warning');
+
+            // Send Teams notification
+            const typeText = type === 'income' ? '收入' : '支出';
+            const teamsMsg = `🏸 羽球基金｜新交易待確認\n━━━━━━━━━━━━━━\n📌 類型：${typeText}\n👤 提交人：${person}\n💰 金額：$${amount.toLocaleString()}\n🏦 帳號末五碼：${item.account}\n📝 說明：${desc}${note ? '\n📎 備註：' + note : ''}\n⏰ 時間：${new Date().toLocaleString('zh-TW')}\n\n⚠️ 請收款人確認後入帳`;
+            sendTeamsNotification(teamsMsg);
+        }
+
+        // Confirm Transaction
+        function showConfirmModal(id) {
+            pendingActionId = id;
+            const select = document.getElementById('confirmPerson');
+            select.innerHTML = '<option value="">-- 選擇確認人 --</option>' +
+                state.members.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        function confirmTransaction() {
+            const confirmer = document.getElementById('confirmPerson').value;
+            if (!confirmer) { showToast('請選擇確認人', 'error'); return; }
+
+            const idx = state.pending.findIndex(p => p.id === pendingActionId);
+            if (idx === -1) return;
+
+            const item = state.pending.splice(idx, 1)[0];
+            item.status = 'confirmed';
+            item.confirmedBy = confirmer;
+            item.confirmedTime = new Date().toISOString();
+
+            if (item.type === 'income') {
+                state.balance += item.amount;
+            } else {
+                state.balance -= item.amount;
+            }
+
+            state.transactions.unshift(item);
+            saveToStorage();
+
+            closeModal('confirmModal');
+            renderPending();
+            renderHistory();
+            updateBall();
+            updateBadge();
+            showToast(`已確認入帳 $${item.amount.toLocaleString()}`, 'success');
+
+            // Send Teams notification
+            const confirmMsg = `🏸 羽球基金｜交易已確認 ✅\n━━━━━━━━━━━━━━\n👤 提交人：${item.person}\n💰 金額：${item.type === 'income' ? '+' : '-'}$${item.amount.toLocaleString()}\n📝 說明：${item.description}\n✅ 確認人：${confirmer}\n⏰ 確認時間：${new Date().toLocaleString('zh-TW')}\n\n💰 目前餘額：$${state.balance.toLocaleString()}`;
+            sendTeamsNotification(confirmMsg);
+        }
+
+        // Reject Transaction
+        function showRejectModal(id) {
+            pendingActionId = id;
+            const select = document.getElementById('rejectPerson');
+            select.innerHTML = '<option value="">-- 選擇駁回人 --</option>' +
+                state.members.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
+            document.getElementById('rejectModal').classList.add('active');
+            document.getElementById('rejectReason').value = '';
+        }
+
+        function rejectTransaction() {
+            const rejecter = document.getElementById('rejectPerson').value;
+            const reason = document.getElementById('rejectReason').value.trim();
+            if (!rejecter) { showToast('請選擇駁回人', 'error'); return; }
+            if (!reason) { showToast('請說明駁回原因', 'error'); return; }
+
+            const idx = state.pending.findIndex(p => p.id === pendingActionId);
+            if (idx === -1) return;
+
+            const item = state.pending.splice(idx, 1)[0];
+            item.status = 'rejected';
+            item.rejectedBy = rejecter;
+            item.rejectedTime = new Date().toISOString();
+            item.rejectReason = reason;
+
+            state.transactions.unshift(item);
+            saveToStorage();
+
+            closeModal('rejectModal');
+            renderPending();
+            renderHistory();
+            updateBadge();
+            showToast('交易已駁回', 'error');
+
+            // Send Teams notification
+            const rejectMsg = `🏸 羽球基金｜交易已駁回 ❌\n━━━━━━━━━━━━━━\n👤 提交人：${item.person}\n💰 金額：$${item.amount.toLocaleString()}\n📝 說明：${item.description}\n❌ 駁回人：${rejecter}\n📋 原因：${reason}\n⏰ 時間：${new Date().toLocaleString('zh-TW')}`;
+            sendTeamsNotification(rejectMsg);
+        }
+
+        // Render Pending
+        function renderPending() {
+            const list = document.getElementById('pendingList');
+
+            if (!state.pending || state.pending.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="icon">&#9203;</div><p>目前沒有待確認的交易</p></div>';
+                return;
+            }
+
+            list.innerHTML = state.pending.map(p => {
+                const date = new Date(p.submitTime);
+                const dateStr = `${date.getMonth()+1}/${date.getDate()} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
+                const sign = p.type === 'income' ? '+' : '-';
+
+                return `
+                    <div class="pending-item">
+                        <div class="pending-header">
+                            <span class="pending-type ${p.type}">${p.type === 'income' ? '&#11014; 收入' : '&#11015; 支出'}</span>
+                            <span class="pending-amount ${p.type}">${sign}$${p.amount.toLocaleString()}</span>
+                        </div>
+                        <div class="pending-details">
+                            <div class="pending-detail-item"><span class="label">提交人：</span><span class="value">${escapeHtml(p.person)}</span></div>
+                            <div class="pending-detail-item"><span class="label">帳號末五碼：</span><span class="value">${escapeHtml(p.account)}</span></div>
+                            <div class="pending-detail-item"><span class="label">說明：</span><span class="value">${escapeHtml(p.description)}</span></div>
+                            <div class="pending-detail-item"><span class="label">提交時間：</span><span class="value">${dateStr}</span></div>
+                            ${p.note ? `<div class="pending-detail-item" style="grid-column:1/-1"><span class="label">備註：</span><span class="value">${escapeHtml(p.note)}</span></div>` : ''}
+                        </div>
+                        <div class="pending-actions">
+                            <button class="pending-btn reject" onclick="showRejectModal(${p.id})">&#10060; 駁回</button>
+                            <button class="pending-btn confirm" onclick="showConfirmModal(${p.id})">&#9989; 確認收到</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render History
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+
+            let filtered = state.transactions || [];
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(t => {
+                    if (currentFilter === 'rejected') return t.status === 'rejected';
+                    return t.type === currentFilter && t.status === 'confirmed';
+                });
+            }
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<div class="empty-state"><div class="icon">&#128203;</div><p>尚無交易記錄</p></div>';
+                return;
+            }
+
+            list.innerHTML = filtered.map(t => {
+                const submitDate = new Date(t.submitTime);
+                const submitStr = `${submitDate.getMonth()+1}/${submitDate.getDate()} ${submitDate.getHours().toString().padStart(2,'0')}:${submitDate.getMinutes().toString().padStart(2,'0')}`;
+
+                let statusInfo = '';
+                let iconClass = t.type;
+                let amountClass = t.type;
+                let icon = t.type === 'income' ? '&#11014;' : '&#11015;';
+                let sign = t.type === 'income' ? '+' : '-';
+
+                if (t.status === 'confirmed') {
+                    const confirmDate = new Date(t.confirmedTime);
+                    const confirmStr = `${confirmDate.getMonth()+1}/${confirmDate.getDate()} ${confirmDate.getHours().toString().padStart(2,'0')}:${confirmDate.getMinutes().toString().padStart(2,'0')}`;
+                    statusInfo = `&#9989; ${escapeHtml(t.confirmedBy)} 確認 (${confirmStr})`;
+                } else if (t.status === 'rejected') {
+                    const rejectDate = new Date(t.rejectedTime);
+                    const rejectStr = `${rejectDate.getMonth()+1}/${rejectDate.getDate()} ${rejectDate.getHours().toString().padStart(2,'0')}:${rejectDate.getMinutes().toString().padStart(2,'0')}`;
+                    statusInfo = `&#10060; ${escapeHtml(t.rejectedBy)} 駁回：${escapeHtml(t.rejectReason)} (${rejectStr})`;
+                    iconClass = 'rejected';
+                    amountClass = 'rejected';
+                    icon = '&#10060;';
+                }
+
+                return `
+                    <div class="history-item">
+                        <div class="history-icon ${iconClass}">${icon}</div>
+                        <div class="history-info">
+                            <div class="history-desc">${escapeHtml(t.description)}</div>
+                            <div class="history-meta">
+                                ${escapeHtml(t.person)} &#8226; 帳號${escapeHtml(t.account)} &#8226; ${submitStr}<br>
+                                ${statusInfo}
+                            </div>
+                        </div>
+                        <div>
+                            <div class="history-amount ${amountClass}">${sign}$${t.amount.toLocaleString()}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Tabs
+        function switchTab(tab) {
+            activeTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+
+            if (tab === 'pending') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tabPending').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tabHistory').classList.add('active');
+            }
+        }
+
+        function updateBadge() {
+            const badge = document.getElementById('pendingBadge');
+            const count = (state.pending || []).length;
+            badge.textContent = count;
+            badge.className = count > 0 ? 'badge' : 'badge zero';
+        }
+
+        // Filter
+        function filterHistory(type) {
+            currentFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderHistory();
+        }
+
+        // Members
+        function renderMembers() {
+            const container = document.getElementById('memberChips');
+            const select = document.getElementById('personSelect');
+
+            const chips = (state.members || []).map(m =>
+                `<span class="member-chip">${escapeHtml(m)}</span>`
+            ).join('');
+
+            container.innerHTML = chips + '<span class="add-member-btn" onclick="showAddMemberModal()">+ 新增成員</span>';
+
+            select.innerHTML = '<option value="">-- 請選擇 --</option>' +
+                (state.members || []).map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
+        }
+
+        function showAddMemberModal() {
+            document.getElementById('memberModal').classList.add('active');
+            document.getElementById('newMemberInput').focus();
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function addMember() {
+            const name = document.getElementById('newMemberInput').value.trim();
+            if (!name) { showToast('請輸入成員名稱', 'error'); return; }
+            if (state.members.includes(name)) { showToast('該成員已存在', 'error'); return; }
+            state.members.push(name);
+            saveToStorage();
+            renderMembers();
+            closeModal('memberModal');
+            document.getElementById('newMemberInput').value = '';
+            showToast(`已新增成員：${name}`, 'success');
+        }
+
+        // Toast
+        function showToast(msg, type) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = `toast ${type}`;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        // Escape HTML
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str || '';
+            return div.innerHTML;
+        }
+
+        // Enter key
+        document.getElementById('newMemberInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addMember();
+        });
+        document.getElementById('rejectReason').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') rejectTransaction();
+        });
+
+        init();
+    </script>
+</body>
+</html>
