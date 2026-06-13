@@ -960,6 +960,29 @@
         </div>
     </div>
 
+    <!-- Manage Members Modal -->
+    <div class="modal-overlay" id="manageMembersModal">
+        <div class="modal" style="max-width:450px;">
+            <h3>&#9998; 管理成員</h3>
+            <div id="memberManageList" style="max-height:300px;overflow-y:auto;margin-bottom:15px;"></div>
+            <div class="modal-btns">
+                <button class="modal-btn cancel" onclick="closeModal('manageMembersModal')">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Member Modal -->
+    <div class="modal-overlay" id="editMemberModal">
+        <div class="modal">
+            <h3>修改成員名稱</h3>
+            <input type="text" id="editMemberInput" placeholder="輸入新名稱">
+            <div class="modal-btns">
+                <button class="modal-btn cancel" onclick="closeModal('editMemberModal')">取消</button>
+                <button class="modal-btn confirm" onclick="confirmEditMember()">確認修改</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
@@ -983,16 +1006,6 @@
         const db = firebase.database();
         const dbRef = db.ref('badminton_fund');
 
-        const TEAMS_WEBHOOK_URL = 'https://defaulta7687ede7a6b4ef6bace642f677fbe.31.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/764d5d4d0e1a44e88aec94df026faba4/triggers/manual/paths/invoke?api-version=1';
-
-        // Send notification to Teams
-        function sendTeamsNotification(message) {
-            fetch(TEAMS_WEBHOOK_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: message })
-            }).catch(err => console.log('Teams notification failed:', err));
-        }
 
         let state = {
             balance: 0,
@@ -1004,9 +1017,42 @@
         let currentFilter = 'all';
         let activeTab = 'pending';
         let pendingActionId = null;
+        let previousPendingCount = 0;
+        let isFirstLoad = true;
+
+        // Request notification permission on load
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+
+        // Send browser desktop notification
+        function sendDesktopNotification(title, body) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                const notification = new Notification(title, {
+                    body: body,
+                    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🏸</text></svg>',
+                    tag: 'badminton-fund',
+                    requireInteraction: true
+                });
+                notification.onclick = () => {
+                    window.focus();
+                    notification.close();
+                };
+                // Play sound
+                try {
+                    const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbsGczLj+a2teleC4wdaLO2KNzQDRoo8/ep3dCOGWhy9ylcUA2ZZ/J3aVyPzZlnsjcpHE+NmSdx9ykcD42Y5zG26NvPTVinMXbo28+NWKcxdujbz41YpzF26NvPjVinMXbo289NWKcxdujbz41YZvE2qJuPDRhm8PasH5SNGGbxNqibjw0YZvE2qJuPDRhm8Taopc=');
+                    audio.volume = 0.5;
+                    audio.play();
+                } catch(e) {}
+            }
+        }
 
         // Initialize
         function init() {
+            requestNotificationPermission();
+
             // Listen for realtime updates from Firebase
             dbRef.on('value', (snapshot) => {
                 const data = snapshot.val();
@@ -1016,6 +1062,46 @@
                     if (!Array.isArray(state.transactions)) state.transactions = [];
                     if (!Array.isArray(state.members)) state.members = [];
                 }
+
+                // Check if new pending items were added (not on first load)
+                const currentPendingCount = (state.pending || []).length;
+                if (!isFirstLoad && currentPendingCount > previousPendingCount) {
+                    const newest = state.pending[0];
+                    if (newest) {
+                        const typeText = newest.type === 'income' ? '收入' : '支出';
+                        const sign = newest.type === 'income' ? '+' : '-';
+                        sendDesktopNotification(
+                            '🏸 羽球基金｜新交易待確認',
+                            `${newest.person} 提交了 ${sign}$${newest.amount.toLocaleString()}（${newest.description}）\n等待收款人確認`
+                        );
+                    }
+                }
+
+                // Check if transaction was confirmed
+                if (!isFirstLoad && state.transactions && state.transactions.length > 0) {
+                    const latest = state.transactions[0];
+                    if (latest.status === 'confirmed' && latest.confirmedTime) {
+                        const timeDiff = Date.now() - new Date(latest.confirmedTime).getTime();
+                        if (timeDiff < 5000) {
+                            sendDesktopNotification(
+                                '🏸 羽球基金｜交易已確認 ✅',
+                                `${latest.confirmedBy} 確認了 ${latest.person} 的 $${latest.amount.toLocaleString()}（${latest.description}）\n目前餘額：$${state.balance.toLocaleString()}`
+                            );
+                        }
+                    } else if (latest.status === 'rejected' && latest.rejectedTime) {
+                        const timeDiff = Date.now() - new Date(latest.rejectedTime).getTime();
+                        if (timeDiff < 5000) {
+                            sendDesktopNotification(
+                                '🏸 羽球基金｜交易已駁回 ❌',
+                                `${latest.rejectedBy} 駁回了 ${latest.person} 的 $${latest.amount.toLocaleString()}\n原因：${latest.rejectReason}`
+                            );
+                        }
+                    }
+                }
+
+                previousPendingCount = currentPendingCount;
+                isFirstLoad = false;
+
                 renderMembers();
                 renderPending();
                 renderHistory();
@@ -1092,10 +1178,6 @@
             switchTab('pending');
             showToast('已提交，等待收款人確認', 'warning');
 
-            // Send Teams notification
-            const typeText = type === 'income' ? '收入' : '支出';
-            const teamsMsg = `🏸 羽球基金｜新交易待確認\n━━━━━━━━━━━━━━\n📌 類型：${typeText}\n👤 提交人：${person}\n💰 金額：$${amount.toLocaleString()}\n🏦 帳號末五碼：${item.account}\n📝 說明：${desc}${note ? '\n📎 備註：' + note : ''}\n⏰ 時間：${new Date().toLocaleString('zh-TW')}\n\n⚠️ 請收款人確認後入帳`;
-            sendTeamsNotification(teamsMsg);
         }
 
         // Confirm Transaction
@@ -1135,9 +1217,6 @@
             updateBadge();
             showToast(`已確認入帳 $${item.amount.toLocaleString()}`, 'success');
 
-            // Send Teams notification
-            const confirmMsg = `🏸 羽球基金｜交易已確認 ✅\n━━━━━━━━━━━━━━\n👤 提交人：${item.person}\n💰 金額：${item.type === 'income' ? '+' : '-'}$${item.amount.toLocaleString()}\n📝 說明：${item.description}\n✅ 確認人：${confirmer}\n⏰ 確認時間：${new Date().toLocaleString('zh-TW')}\n\n💰 目前餘額：$${state.balance.toLocaleString()}`;
-            sendTeamsNotification(confirmMsg);
         }
 
         // Reject Transaction
@@ -1174,9 +1253,6 @@
             updateBadge();
             showToast('交易已駁回', 'error');
 
-            // Send Teams notification
-            const rejectMsg = `🏸 羽球基金｜交易已駁回 ❌\n━━━━━━━━━━━━━━\n👤 提交人：${item.person}\n💰 金額：$${item.amount.toLocaleString()}\n📝 說明：${item.description}\n❌ 駁回人：${rejecter}\n📋 原因：${reason}\n⏰ 時間：${new Date().toLocaleString('zh-TW')}`;
-            sendTeamsNotification(rejectMsg);
         }
 
         // Render Pending
@@ -1312,7 +1388,9 @@
                 `<span class="member-chip">${escapeHtml(m)}</span>`
             ).join('');
 
-            container.innerHTML = chips + '<span class="add-member-btn" onclick="showAddMemberModal()">+ 新增成員</span>';
+            container.innerHTML = chips +
+                '<span class="add-member-btn" onclick="showAddMemberModal()">+ 新增</span>' +
+                (state.members.length > 0 ? '<span class="add-member-btn" onclick="showManageMembersModal()">&#9998; 管理</span>' : '');
 
             select.innerHTML = '<option value="">-- 請選擇 --</option>' +
                 (state.members || []).map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
@@ -1339,6 +1417,71 @@
             showToast(`已新增成員：${name}`, 'success');
         }
 
+        // Manage Members
+        let editingMemberIndex = -1;
+
+        function showManageMembersModal() {
+            renderMemberManageList();
+            document.getElementById('manageMembersModal').classList.add('active');
+        }
+
+        function renderMemberManageList() {
+            const list = document.getElementById('memberManageList');
+            list.innerHTML = (state.members || []).map((m, i) => `
+                <div style="display:flex;align-items:center;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.06);gap:10px;">
+                    <span style="flex:1;color:#ccd6f6;">${escapeHtml(m)}</span>
+                    <button onclick="startEditMember(${i})" style="background:rgba(0,210,255,0.15);border:1px solid rgba(0,210,255,0.3);color:#00d2ff;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:0.8em;">修改</button>
+                    <button onclick="deleteMember(${i})" style="background:rgba(255,82,82,0.15);border:1px solid rgba(255,82,82,0.3);color:#ff5252;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:0.8em;">刪除</button>
+                </div>
+            `).join('');
+        }
+
+        function startEditMember(index) {
+            editingMemberIndex = index;
+            document.getElementById('editMemberInput').value = state.members[index];
+            document.getElementById('editMemberModal').classList.add('active');
+            document.getElementById('editMemberInput').focus();
+        }
+
+        function confirmEditMember() {
+            const newName = document.getElementById('editMemberInput').value.trim();
+            if (!newName) { showToast('名稱不能為空', 'error'); return; }
+            if (newName !== state.members[editingMemberIndex] && state.members.includes(newName)) {
+                showToast('該名稱已存在', 'error'); return;
+            }
+            const oldName = state.members[editingMemberIndex];
+            state.members[editingMemberIndex] = newName;
+
+            // Update name in pending transactions
+            (state.pending || []).forEach(p => {
+                if (p.person === oldName) p.person = newName;
+            });
+            // Update name in completed transactions
+            (state.transactions || []).forEach(t => {
+                if (t.person === oldName) t.person = newName;
+                if (t.confirmedBy === oldName) t.confirmedBy = newName;
+                if (t.rejectedBy === oldName) t.rejectedBy = newName;
+            });
+
+            saveToStorage();
+            renderMembers();
+            renderMemberManageList();
+            renderPending();
+            renderHistory();
+            closeModal('editMemberModal');
+            showToast(`已將「${oldName}」改為「${newName}」`, 'success');
+        }
+
+        function deleteMember(index) {
+            const name = state.members[index];
+            if (!confirm(`確定要刪除成員「${name}」嗎？`)) return;
+            state.members.splice(index, 1);
+            saveToStorage();
+            renderMembers();
+            renderMemberManageList();
+            showToast(`已刪除成員：${name}`, 'success');
+        }
+
         // Toast
         function showToast(msg, type) {
             const toast = document.getElementById('toast');
@@ -1361,6 +1504,9 @@
         });
         document.getElementById('rejectReason').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') rejectTransaction();
+        });
+        document.getElementById('editMemberInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') confirmEditMember();
         });
 
         init();
