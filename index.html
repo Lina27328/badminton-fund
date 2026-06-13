@@ -829,7 +829,7 @@
 
                 <div class="form-group">
                     <label class="required">匯款人 / 經手人</label>
-                    <select id="personSelect">
+                    <select id="personSelect" onchange="onPersonChange()">
                         <option value="">-- 請選擇 --</option>
                     </select>
                 </div>
@@ -1113,6 +1113,27 @@
         // Save to Firebase (syncs to all users)
         function saveToStorage() {
             dbRef.set(state);
+        }
+
+        // Auto-fill account number based on member's last transaction
+        function onPersonChange() {
+            const person = document.getElementById('personSelect').value;
+            if (!person) {
+                document.getElementById('accountInput').value = '';
+                return;
+            }
+
+            const allRecords = [...(state.pending || []), ...(state.transactions || [])];
+            // Sort by time descending to find the most recent record
+            const sorted = allRecords
+                .filter(r => r.person === person && r.account && r.account !== '(現金)')
+                .sort((a, b) => new Date(b.submitTime) - new Date(a.submitTime));
+
+            if (sorted.length > 0) {
+                document.getElementById('accountInput').value = sorted[0].account;
+            } else {
+                document.getElementById('accountInput').value = '';
+            }
         }
 
         // Water Ball
